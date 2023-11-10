@@ -32,7 +32,6 @@ LoRa transmit important data
 Arming web page
 
 
-
 Startup Calibration:
 ENSURE USB AND LIPO ARE NOT BOTH CONNECTED
 When device is powered on, a red light near the esp32 will turn on.
@@ -137,6 +136,8 @@ sh2_SensorValue_t sensorValue;
 Adafruit_ADXL375 accel = Adafruit_ADXL375(12345);
 
 SFE_UBLOX_GNSS myGNSS;
+
+ 
 
 void setup(void) {
 
@@ -328,6 +329,7 @@ void setup(void) {
       delay(10);
       }
   }
+
   
   setID(INFO_STRING_ID);
   measRate = myGNSS.getMeasurementRate(); //Get the measurement rate of this module
@@ -408,11 +410,13 @@ void setReports(void) {
   /*if (!bno08x.enableReport(SH2_ACCELEROMETER)) {
     addThenOutput("Could not enable accelerometer");
   } */
+  /*
   if (!bno08x.enableReport(SH2_ARVR_STABILIZED_RV, 2500)) { //max 400hz
     setID(INFO_STRING_ID);
     addToOutput("Could not enable gyroscope");
     outputData();
   }
+  */
   if (!bno08x.enableReport(SH2_GYROSCOPE_CALIBRATED,2500)) { //max 400hz
     setID(INFO_STRING_ID);
     addToOutput("Could not enable gyroscope");
@@ -421,11 +425,13 @@ void setReports(void) {
  /* if (!bno08x.enableReport(SH2_MAGNETIC_FIELD_CALIBRATED)) {
     addThenOutput("Could not enable magnetic field calibrated");
   } */
+  /*
   if (!bno08x.enableReport(SH2_LINEAR_ACCELERATION, 2500)) { //max 400hz
     setID(INFO_STRING_ID);
     addToOutput("Could not enable linear acceleration");
     outputData();
   }
+  */
  /* if (!bno08x.enableReport(SH2_GRAVITY)) {
     addThenOutput("Could not enable gravity vector");
   }
@@ -446,8 +452,8 @@ void setReports(void) {
   } */
 
 }
-
-
+/*
+Quaternion to Euler is a very slow calculation so we should do this after uploading the data.
 void quaternionToEuler(float qr, float qi, float qj, float qk, euler_t* ypr, bool degrees = false) {
 
     float sqr = sq(qr);
@@ -465,10 +471,21 @@ void quaternionToEuler(float qr, float qi, float qj, float qk, euler_t* ypr, boo
       ypr->roll *= RAD_TO_DEG;
     }
 }
-
 void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* ypr, bool degrees = false) {
     quaternionToEuler(rotational_vector->real, rotational_vector->i, rotational_vector->j, rotational_vector->k, ypr, degrees);
 }
+*/
+void printVariableNoUnits(char* name, long variable) {
+  Serial.print(" "); Serial.print(F(name)); Serial.print(": ");
+  Serial.print(variable);
+}
+
+void printVariableAndUnits(char* name, long variable, char* units) {
+  Serial.print(" "); Serial.print(F(name)); Serial.print(": ");
+  Serial.print(variable);
+  Serial.print(" ("); Serial.print(F(units)); Serial.print(") ");
+}
+
 void loop() {
   long currentMicros = micros();
   myGNSS.checkUblox(); // Check for the arrival of new data and process it.
@@ -520,7 +537,6 @@ void loop() {
  
   // Check the state of the interrupt pin
   if (digitalRead(BNO08X_INT) == LOW) {
-    Serial.println("In BNO if block");
     // If the interrupt pin is LOW, set the flag to collect data
     collectData = true;
     //begin collecting BNO data
@@ -552,7 +568,23 @@ void loop() {
         addThenOutput(sensorValue.un.magneticField.z);
         break; */
       case SH2_ARVR_STABILIZED_RV: //VR hyperstabilized rotation vector, slow, kalman filtered
-        quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
+      {
+      float qr = sensorValue.un.arvrStabilizedRV.real;
+      float qi = sensorValue.un.arvrStabilizedRV.i;
+      float qj = sensorValue.un.arvrStabilizedRV.j;
+      float qk = sensorValue.un.arvrStabilizedRV.k;
+      Serial.print("ARVR-Quat - R: ");
+      Serial.print(qr);
+      Serial.print(" I: ");
+      Serial.print(qi);
+      Serial.print(" J: ");
+      Serial.print(qj);
+      Serial.print(" K: ");
+      Serial.println(qk);
+      break; 
+      }
+      /*
+      	quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
         setID(SH2_ROT_ID);
         addToOutput(ypr.yaw);
         addToOutput(ypr.pitch);
@@ -590,6 +622,7 @@ void loop() {
     outputData();
     
    //begin writing to SD Card
+
 
   }
   if (bno08x.wasReset()) {
