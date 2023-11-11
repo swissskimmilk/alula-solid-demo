@@ -736,8 +736,6 @@ void addToOutput(uint8_t output) {
 }
 
 void addToOutput(float output) {
-  Serial.print("Pressure debug: ");
-  Serial.println(output);
   memcpy(currOutput + currIndex, &output, 4);
   currIndex += 4;
 }

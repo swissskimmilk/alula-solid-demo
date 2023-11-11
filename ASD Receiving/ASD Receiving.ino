@@ -79,9 +79,18 @@ void loop() {
     int id = rxData[0];
     int i = 1;
     while (i < rxLen) {
+      //Serial.println("we do be looping");
       for(int j = 0; j < IDDataTypes[id].size(); j++) {
-        Serial.print(IDStrings[id][i]);
-        int dataTypeID = IDDataTypes[id][i];
+        Serial.print(IDStrings[id][j]);
+        int dataTypeID = IDDataTypes[id][j];
+        // try {
+        //   dataTypeID = IDDataTypes[id][j];
+        //   // Block of code to try
+        //   //throw exception; // Throw an exception when a problem arise
+        // }
+        // catch (...) {
+        //   Serial.println("MALFORMED DATA! NO ID FOUND!");
+        // }
         if (dataTypeID == 1) {
           Serial.print(rxData[i]);
           i++;
@@ -99,10 +108,15 @@ void loop() {
           Serial.print(l);
           i += 4;
         }
+        else {
+          Serial.println("INVALID DATATYPE MAPPING!");
+        }
       }
       Serial.println();
       id = rxData[i];
+      i++;
     }
+    Serial.println();
     
 
 
@@ -143,5 +157,5 @@ void loop() {
     //   Serial.print(dataRate); Serial.println(" bytes per second");
     // }
   }
-  delay(1);
+  delay(10);
 }
