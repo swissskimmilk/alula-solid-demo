@@ -141,7 +141,7 @@ SFE_UBLOX_GNSS myGNSS;
 
 void setup(void) {
 
-  Serial.begin(115200);
+  // Serial.begin(115200);
 
   int16_t ret = lora.begin(RF_FREQUENCY,              //frequency in Hz
                            TX_OUTPUT_POWER);          //tx power in dBm
@@ -157,21 +157,19 @@ void setup(void) {
 
   // GOTTA MESS WITH THE PINS PROB 
   if (!SD.begin(SDCS)) {
-    Serial.println("SD card mount failed!");
     delay(100);
-    // while (1) {
-    //   delay(100);
-    // }
+    while (1) {
+      delay(100);
+    }
   }
   myFile = SD.open("/star.txt", FILE_APPEND);
   if (SD.exists("/star.txt")) {
     //Serial.println("File created successfully!");
   } 
   else {
-    Serial.println("File not created :^(");
-    // while(1) {
-    //   delay(100);
-    // }
+    while(1) {
+      delay(100);
+    }
   }
   if (myFile) {
     myFile.print("Writing to star.txt...");    
@@ -184,10 +182,9 @@ void setup(void) {
     
   } else {
     // if the file didn't open, print an error:
-    Serial.println("error opening star.txt");
-    // while(1) {
-    //   delay(100);
-    // }
+    while(1) {
+      delay(100);
+    }
   }  
   digitalWrite(SDCS, HIGH);
                   
@@ -404,9 +401,9 @@ void setReports(void) {
   setID(INFO_STRING_ID);
   addToOutput("Setting desired reports");
   outputData();
-  /*if (!bno08x.enableReport(SH2_ACCELEROMETER)) {
-    addThenOutput("Could not enable accelerometer");
-  } */
+  // if (!bno08x.enableReport(SH2_ACCELEROMETER)) {
+  //   addThenOutput("Could not enable accelerometer");
+  // } 
   /*
   if (!bno08x.enableReport(SH2_ARVR_STABILIZED_RV, 2500)) { //max 400hz
     setID(INFO_STRING_ID);
@@ -422,13 +419,13 @@ void setReports(void) {
  /* if (!bno08x.enableReport(SH2_MAGNETIC_FIELD_CALIBRATED)) {
     addThenOutput("Could not enable magnetic field calibrated");
   } */
-  /*
+  
   if (!bno08x.enableReport(SH2_LINEAR_ACCELERATION, 2500)) { //max 400hz
     setID(INFO_STRING_ID);
     addToOutput("Could not enable linear acceleration");
     outputData();
   }
-  */
+  
  /* if (!bno08x.enableReport(SH2_GRAVITY)) {
     addThenOutput("Could not enable gravity vector");
   }
@@ -472,16 +469,16 @@ void quaternionToEulerRV(sh2_RotationVectorWAcc_t* rotational_vector, euler_t* y
     quaternionToEuler(rotational_vector->real, rotational_vector->i, rotational_vector->j, rotational_vector->k, ypr, degrees);
 }
 */
-void printVariableNoUnits(char* name, long variable) {
-  Serial.print(" "); Serial.print(F(name)); Serial.print(": ");
-  Serial.print(variable);
-}
+// void printVariableNoUnits(char* name, long variable) {
+//   Serial.print(" "); Serial.print(F(name)); Serial.print(": ");
+//   Serial.print(variable);
+// }
 
-void printVariableAndUnits(char* name, long variable, char* units) {
-  Serial.print(" "); Serial.print(F(name)); Serial.print(": ");
-  Serial.print(variable);
-  Serial.print(" ("); Serial.print(F(units)); Serial.print(") ");
-}
+// void printVariableAndUnits(char* name, long variable, char* units) {
+//   Serial.print(" "); Serial.print(F(name)); Serial.print(": ");
+//   Serial.print(variable);
+//   Serial.print(" ("); Serial.print(F(units)); Serial.print(") ");
+// }
 
 void loop() {
   long currentMicros = micros();
@@ -537,25 +534,26 @@ void loop() {
     // If the interrupt pin is LOW, set the flag to collect data
     collectData = true;
     //begin collecting BNO data
-    if (!bno08x.getSensorEvent(&sensorValue)) {
-      Serial.println("The thing that never happens happened");
-      return; // NEVER HAPPENS
-    }  
+    // if (!bno08x.getSensorEvent(&sensorValue)) {
+    //   Serial.println("The thing that never happens happened");
+    //   return; // NEVER HAPPENS
+    // }  
+    bno08x.getSensorEvent(&sensorValue);
+    // Serial.println(sensorValue.sensorId);
     switch (sensorValue.sensorId) {
-      /*case SH2_ACCELEROMETER: //accelerometer including gravity, 3 axis defined by sensor orientation, m/s^2
-        addToOutput("Accelerometer - x: ");
-        addToOutput(sensorValue.un.accelerometer.x);
-        addToOutput(" y: ");
-        addToOutput(sensorValue.un.accelerometer.y);
-        addToOutput(" z: ");
-        addThenOutput(sensorValue.un.accelerometer.z);
-        break; */
-      case SH2_GYROSCOPE_CALIBRATED: //angular velocity 3 axis defined by sensor orientation, rad/s
-        setID(SH2_GYRO_ID);
-        addToOutput(sensorValue.un.gyroscope.x);
-        addToOutput(sensorValue.un.gyroscope.y);
-        addToOutput(sensorValue.un.gyroscope.z);
-        break;
+      // case SH2_ACCELEROMETER: //accelerometer including gravity, 3 axis defined by sensor orientation, m/s^2
+      //   setID(SH2_ACCEL_ID);
+      //   addToOutput("Accelerometer - x: ");
+      //   addToOutput(sensorValue.un.accelerometer.x);
+      //   addToOutput(sensorValue.un.accelerometer.y);
+      //   addToOutput(sensorValue.un.accelerometer.z);
+      //   break; 
+      // case SH2_GYROSCOPE_CALIBRATED: //angular velocity 3 axis defined by sensor orientation, rad/s
+      //   setID(SH2_GYRO_ID);
+      //   addToOutput(sensorValue.un.gyroscope.x);
+      //   addToOutput(sensorValue.un.gyroscope.y);
+      //   addToOutput(sensorValue.un.gyroscope.z);
+      //   break;
     /* case SH2_MAGNETIC_FIELD_CALIBRATED: // magnetic field 3 axis def by sensor orientation, uT
         addToOutput("Magnetic Field - x: ");
         addToOutput(sensorValue.un.magneticField.x);
@@ -564,29 +562,21 @@ void loop() {
         addToOutput(" z: ");
         addThenOutput(sensorValue.un.magneticField.z);
         break; */
-      case SH2_ARVR_STABILIZED_RV: //VR hyperstabilized rotation vector, slow, kalman filtered
-      {
-      float qr = sensorValue.un.arvrStabilizedRV.real;
-      float qi = sensorValue.un.arvrStabilizedRV.i;
-      float qj = sensorValue.un.arvrStabilizedRV.j;
-      float qk = sensorValue.un.arvrStabilizedRV.k;
-      Serial.print("ARVR-Quat - R: ");
-      Serial.print(qr);
-      Serial.print(" I: ");
-      Serial.print(qi);
-      Serial.print(" J: ");
-      Serial.print(qj);
-      Serial.print(" K: ");
-      Serial.println(qk);
-      break; 
-      }
-      /*
-      	quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
-        setID(SH2_ROT_ID);
-        addToOutput(ypr.yaw);
-        addToOutput(ypr.pitch);
-        addToOutput(ypr.roll);
-        break;  
+      // case SH2_ARVR_STABILIZED_RV: //VR hyperstabilized rotation vector, slow, kalman filtered
+      // {
+      //   float qr = sensorValue.un.arvrStabilizedRV.real;
+      //   float qi = sensorValue.un.arvrStabilizedRV.i;
+      //   float qj = sensorValue.un.arvrStabilizedRV.j;
+      //   float qk = sensorValue.un.arvrStabilizedRV.k;
+      //   break; 
+      // }
+      
+      	// quaternionToEulerRV(&sensorValue.un.arvrStabilizedRV, &ypr, true);
+        // setID(SH2_ROT_ID);
+        // addToOutput(ypr.yaw);
+        // addToOutput(ypr.pitch);
+        // addToOutput(ypr.roll);
+        // break;  
       case SH2_LINEAR_ACCELERATION: // same as accelerometer but without gravity (0,0,0 at rest)
         setID(SH2_ACCEL_ID);  
         addToOutput(sensorValue.un.linearAcceleration.x);
@@ -615,13 +605,17 @@ void loop() {
   } 
   else {
     // If the interrupt pin is not LOW, set the flag to stop collecting data
-    collectData = false;
-    outputData();
+    // Serial.println("outputting");
+    // collectData = false;
+    // outputData();
     
    //begin writing to SD Card
 
 
   }
+  // Serial.println("outputting");
+  collectData = false;
+  outputData();
   if (bno08x.wasReset()) {
     setID(RESET_ID);
     addToOutput((uint8_t)1);
@@ -728,7 +722,7 @@ void setID(uint8_t identifier){
 }
 
 void addToOutput(uint8_t output) {
-  currOutput[strlen((char *)currOutput)] = output;
+  currOutput[currIndex] = output;
   currIndex++;
 }
 
@@ -755,22 +749,22 @@ void addToOutput(String output) {
 
 void outputData() {
   // For debugging
-  for(int i=0;i< currIndex;i++) {
-    Serial.print(currOutput[i], HEX);
-    Serial.print(" ");
-  }
-  Serial.println();
-  for(int i=0;i< currIndex;i++) {
-    if (currOutput[i] > 0x1F && currOutput[i] < 0x7F) {
-      char myChar = currOutput[i];
-      Serial.print(myChar);
-    } else {
-      Serial.print("?");
-    }
-  }
-  Serial.println();
+  // for(int i=0;i< currIndex;i++) {
+  //   Serial.print(currOutput[i], HEX);
+  //   Serial.print(" ");
+  // }
+  // Serial.println();
+  // for(int i=0;i< currIndex;i++) {
+  //   if (currOutput[i] > 0x1F && currOutput[i] < 0x7F) {
+  //     char myChar = currOutput[i];
+  //     Serial.print(myChar);
+  //   } else {
+  //     Serial.print("?");
+  //   }
+  // }
+  // Serial.println();
   digitalWrite(15, LOW);
-  if (lora.Send(currOutput, currIndex, SX126x_TXMODE_SYNC)) {
+  if (lora.Send(currOutput, currIndex, SX126x_TXMODE_ASYNC)) {
     //addThenOutput("Send success");
   } else {
     //myFile.println("Send fail");
@@ -778,10 +772,15 @@ void outputData() {
   digitalWrite(15, HIGH);
   digitalWrite(SDCS, LOW);
   myFile = SD.open("/star.txt", FILE_APPEND);
-  myFile.println((char *)currOutput);
+  //myFile.println((char *)currOutput);
+
+  for (int i = 0; i < index; i++) {
+    myFile.print((char)currOutput[i]);
+  }
+  myFile.println();
+  
   myFile.close();
   digitalWrite(SDCS, HIGH);
   memset(currOutput, 0, 255);
   currIndex = 0;
 }
-
